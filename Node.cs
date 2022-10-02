@@ -7,6 +7,7 @@ namespace app
 {
     public class Node
 {
+    
     public int myLayer;
     public double inputCollection;
     public double inputCollectionwBias;
@@ -49,8 +50,8 @@ namespace app
             inputCollectionwBias = inputCollection+bias;
             if(activation == 0){
                 //L
-                //outputData = Max(0, inputCollectionwBias);
-                outputData =  1.0 / (1 + Exp(-inputCollectionwBias));
+                outputData = Max(0, inputCollectionwBias);
+                //outputData =  1.0 / (1 + Exp(-inputCollectionwBias));
             }
             if (activation == 1)
             {

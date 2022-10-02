@@ -6,7 +6,8 @@ namespace app
     public class NeatMain
 
 {   
-    
+    public bool isBest = false;
+    public bool isMutated = false;
 
     System.Random rng = new System.Random();
     
@@ -70,6 +71,7 @@ namespace app
 
     public double[] calculate(double[] inputs)
     {
+        
         //Debug.Log("!");
         int y = 0;
         
@@ -147,12 +149,20 @@ namespace app
         {
             NetPerformance += cost(data);
         }
+        
         lastPerformance = NetPerformance/learnData.Length;
         return NetPerformance/learnData.Length;
     }
 
     public void addConnection(Node from,Node to){
         bool toIsOutput = false;
+        foreach (Connection con in connections)
+        {
+            if (con.inputNode == from || con.outputNode==to)
+            {
+               return; 
+            }
+        }
         if (from.myLayer==to.myLayer)
         {
             return;
@@ -248,8 +258,18 @@ namespace app
     public void changeBias(Node node,double amount){
         node.bias += amount;
     }
-    public void changeWeight(Connection con,double amount){
-        con.weight += amount;
+    public void changeWeight(Connection con){
+        int sign = rng.Next(2);
+        if(sign==0){
+            con.weight += con.weight*0.2;
+        }
+        else{
+           con.weight -= con.weight*0.2; 
+        }
+        
+    }
+    public void randomWeight(Connection con){
+        con.weight = rng.NextDouble() * 2 - 1;
     }
 
 
@@ -278,7 +298,9 @@ namespace app
 
         if(rng.Next(100)<mutationOdds){
             addConnection(findInNode(rng.Next(Inputnodes.Length+HiddenNodes.Count)),findOutNode(rng.Next(Outputnodes.Length+HiddenNodes.Count)));
+            isMutated=true;
         }
+
 
 
 
@@ -286,23 +308,34 @@ namespace app
         if(rng.Next(100)<mutationOdds&&connections.Count>2){
             
             addNode(findOutNode(rng.Next(Inputnodes.Length+HiddenNodes.Count)),findOutNode(rng.Next(Outputnodes.Length+HiddenNodes.Count)));
-            
+            isMutated=true;
         }
         for (int i = 0; i < 3+HiddenNodes.Count; i++)
         {
             if(rng.Next(100)<mutationOdds){
                 changeBias(findInNode(rng.Next(Inputnodes.Length+HiddenNodes.Count)),rng.NextDouble()*2-1);
+                isMutated=true;
             }
             if(rng.Next(100)<mutationOdds){
                 changeBias(findOutNode(rng.Next(Outputnodes.Length+HiddenNodes.Count)),rng.NextDouble()*2-1);
+                isMutated=true;
             }
         }
-        for (int i = 0; i < 6+HiddenNodes.Count; i++)
+
+        for (int i = 0; i < connections.Count; i++)
         {
             
-            if(rng.Next(100)<mutationOdds&&connections.Count>1){
+            if(rng.Next(100)<mutationOdds*3){
               //Debug.Log("190 Main");  
-            changeWeight(connections[rng.Next(connections.Count-1)],rng.NextDouble()*2-1);
+            
+            changeWeight(connections[i]);
+            isMutated=true;
+            }
+            if(rng.Next(100)<mutationOdds){
+              //Debug.Log("190 Main");  
+            
+            randomWeight(connections[i]);
+            isMutated=true;
             }
             
             
@@ -311,6 +344,7 @@ namespace app
         try{
             if(rng.Next(100)<mutationOdds*0.5&&HiddenNodes.Count>1){
             deleteHiddenNode(HiddenNodes[rng.Next(HiddenNodes.Count-1)]);
+            isMutated=true;
         }
 
         }catch(InvalidOperationException exception){
